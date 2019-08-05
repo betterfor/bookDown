@@ -1,0 +1,11 @@
+app: BookDown
+filepath: "."
+kindleMail: ""
+
+db:
+  user: "root"
+  passwd: "xiejian"
+  ip: "localhost"
+  port: 3306
+  db: "ippool"
+  showsql: true
