@@ -5,6 +5,7 @@ package commands
 
 import (
 	"flag"
+	"github.com/betterfor/BookDown/utils"
 	"io"
 	"os"
 	"strings"
@@ -37,6 +38,7 @@ type Command struct {
 }
 
 var AvailableCommands []*Command
+var cmdUsage = `Use {{printf "bee help %s" .Name | bold}} for more information.{{endline}}`
 
 // Name return the command's name: the first word in the Usage line
 func (c *Command) Name() string {
@@ -61,7 +63,28 @@ func (c *Command) Out() io.Writer {
 	return os.Stderr
 }
 
-//
+// Usage output the Usage for command.
 func (c *Command) Usage() {
+	utils.Tmpl(cmdUsage, c)
+	os.Exit(2)
+}
 
+// Runnable reports whether the command can be run;
+// otherwise it is a documention fake command such as import path
+func (c *Command) Runnable() bool {
+	return c.Run != nil
+}
+
+//
+func (c *Command) Options() map[string]string {
+	options := make(map[string]string)
+	c.Flag.VisitAll(func(f *flag.Flag) {
+		defaultVal := f.DefValue
+		if len(defaultVal) > 0 {
+			options[f.Name+"="+defaultVal] = f.Usage
+		} else {
+			options[f.Name] = f.Usage
+		}
+	})
+	return options
 }

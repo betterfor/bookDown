@@ -6,7 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/astaxie/beego/logs"
-	"github.com/betterfor/NovelDown/models"
+	"github.com/betterfor/BookDown/models"
 	"strconv"
 	"strings"
 	"sync"
