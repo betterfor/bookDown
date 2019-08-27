@@ -2,7 +2,6 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"github.com/betterfor/BookDown/cmd"
 	"github.com/betterfor/BookDown/cmd/commands"
 	"os"
@@ -20,7 +19,7 @@ func main() {
 		return
 	}
 	if args[0] == "help" {
-		fmt.Println("help is not ready.")
+		cmd.Help(args)
 		return
 	}
 	for _, c := range commands.AvailableCommands {

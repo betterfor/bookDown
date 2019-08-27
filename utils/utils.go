@@ -5,6 +5,7 @@ package utils
 
 import (
 	"bytes"
+	"fmt"
 	"os"
 	"strings"
 	"text/template"
@@ -42,4 +43,9 @@ func Tmpl(text string, data interface{}) {
 	if err != nil {
 		panic(err)
 	}
+}
+
+func PrintErrorAndExit(message, errorTemplate string) {
+	Tmpl(fmt.Sprintf(errorTemplate, message), nil)
+	os.Exit(2)
 }
