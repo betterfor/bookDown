@@ -1,6 +1,7 @@
 package models
 
 import (
+	"fmt"
 	"time"
 )
 
@@ -11,4 +12,8 @@ type Ippool struct {
 	Port       string    `json:"port"`
 	CreateTime time.Time `json:"create_time"`
 	Deleted    int64     `json:"deleted"`
+}
+
+func (ip *Ippool) String() string {
+	return fmt.Sprintf("%s://%s:%s", ip.Protocol, ip.Ip, ip.Port)
 }

@@ -7,9 +7,9 @@ import (
 	"github.com/axgle/mahonia"
 	"github.com/betterfor/BookDown/models"
 	"github.com/betterfor/BookDown/utils"
-	"github.com/betterfor/GoLogger/logger"
-	"github.com/betterfor/GoRequest"
-	"github.com/betterfor/gotils/epubtil"
+	"github.com/betterfor/gologger"
+	"github.com/betterfor/gorequest"
+	"github.com/betterfor/goutil/epubtil"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -29,10 +29,10 @@ var (
 
 func Search(keyword string) (n int, slice models.SearchNovelSlice, err error) {
 	url := "https://so.biqusoso.com/s.php?siteid=biqiuge.com&q=" + keyword
-	resp, _, errs := GoRequest.New().Get(url).End()
+	resp, _, errs := gorequest.New().Get(url).End()
 	if len(errs) != 0 || errs != nil {
 		msg := fmt.Sprintf("get http errors: %s", errs)
-		logger.Error("[Get89HttpProxy] ", msg)
+		gologger.Error("[Get89HttpProxy] ", msg)
 		err = errors.New(msg)
 		return 0, nil, err
 	}
@@ -72,7 +72,7 @@ func Download(novel models.Novel) error {
 		if chapter.ChapterIndex < 0 {
 			continue
 		}
-		logger.Infof("%+v\n", chapter)
+		gologger.Infof("%+v\n", chapter)
 		go GetContent(chapter, ChanResp)
 	}
 
@@ -107,7 +107,7 @@ Retry:
 		times++
 		goto Retry
 	} else if err != nil {
-		logger.Errorf("[GetContent] Really can not download %+v, error:%s", chapter, err)
+		gologger.Errorf("[GetContent] Really can not download %+v, error:%s", chapter, err)
 		resp.Status = models.Failure
 		resp.ErrMsg = err.Error()
 	} else {
@@ -122,10 +122,10 @@ Retry:
 func getChapters(novel *models.Novel) ([]models.Chapter, error) {
 	var chapterList []models.Chapter
 	// get novel chapters
-	resp, _, errs := GoRequest.New().Get(novel.NovelURL).AppendHeader("User-Agent", utils.RandomUA()).End()
+	resp, _, errs := gorequest.New().Get(novel.NovelURL).AppendHeader("User-Agent", utils.RandomUA()).End()
 	if len(errs) != 0 || errs != nil {
 		msg := fmt.Sprintf("get http errors: %s", errs)
-		logger.Error("[Get89HttpProxy] ", msg)
+		gologger.Error("[getChapters] ", msg)
 		err := errors.New(msg)
 		return nil, err
 	}
@@ -160,9 +160,8 @@ func getChapters(novel *models.Novel) ([]models.Chapter, error) {
 }
 
 func getContent(chapterURL string) ([]string, error) {
-	ip := &models.Ippool{}
-	ip, _ = ip.GetOneRandom()
-	resp, _, errs := GoRequest.New().Get(chapterURL).AppendHeader("User-Agent", utils.RandomUA()).End()
+	ips, _ := utils.GetProxies()
+	resp, _, errs := gorequest.New().Get(chapterURL).AppendHeader("User-Agent", utils.RandomUA()).Proxy(ips[0].String()).End()
 	if len(errs) != 0 || errs != nil {
 		msg := fmt.Sprintf("errors:%s", errs)
 		return nil, errors.New(msg)
@@ -170,7 +169,7 @@ func getContent(chapterURL string) ([]string, error) {
 	defer resp.Body.Close()
 	doc, err := goquery.NewDocumentFromReader(resp.Body)
 	if err != nil {
-		logger.Error("[DownloadNovelList] parse body error:", err)
+		gologger.Error("[DownloadNovelList] parse body error:", err)
 		return nil, err
 	}
 	content := coder.ConvertString(doc.Find(".showtxt").Text())
