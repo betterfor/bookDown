@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"github.com/PuerkitoBio/goquery"
 	"github.com/axgle/mahonia"
-	"github.com/betterfor/BookDown/models"
-	"github.com/betterfor/BookDown/utils"
+	models2 "github.com/betterfor/bookDown/internal/models"
+	utils2 "github.com/betterfor/bookDown/internal/utils"
 	"github.com/betterfor/gologger"
 	"github.com/betterfor/gorequest"
 	"github.com/betterfor/goutil/epubtil"
@@ -27,7 +27,7 @@ var (
 	adRegx = regexp.MustCompile(`https:[\s\S]+wap.biqiuge.com`)
 )
 
-func Search(keyword string) (n int, slice models.SearchNovelSlice, err error) {
+func Search(keyword string) (n int, slice models2.SearchNovelSlice, err error) {
 	url := "https://so.biqusoso.com/s.php?siteid=biqiuge.com&q=" + keyword
 	resp, _, errs := gorequest.New().Get(url).End()
 	if len(errs) != 0 || errs != nil {
@@ -44,7 +44,7 @@ func Search(keyword string) (n int, slice models.SearchNovelSlice, err error) {
 	}
 	doc.Find(".search-list").Find("li").Each(func(i int, selection *goquery.Selection) {
 		selection = selection.Find("span")
-		var search models.Novel
+		var search models2.Novel
 		if regx.MatchString(selection.Eq(0).Text()) {
 			search.NovelName = selection.Eq(1).Text()
 			search.NovelURL, _ = selection.Eq(1).Find("a").Attr("href")
@@ -55,7 +55,7 @@ func Search(keyword string) (n int, slice models.SearchNovelSlice, err error) {
 	return len(slice), slice, nil
 }
 
-func Download(novel models.Novel) error {
+func Download(novel models2.Novel) error {
 	if novel.NovelURL == "" {
 		return errors.New("no url to download")
 	}
@@ -67,7 +67,7 @@ func Download(novel models.Novel) error {
 
 	// get content
 	Len := len(chapterList) - 6
-	var ChanResp = make(chan models.ChanResp, Len)
+	var ChanResp = make(chan models2.ChanResp, Len)
 	for _, chapter := range chapterList {
 		if chapter.ChapterIndex < 0 {
 			continue
@@ -76,17 +76,17 @@ func Download(novel models.Novel) error {
 		go GetContent(chapter, ChanResp)
 	}
 
-	var chapters = make([]models.Chapter, Len)
+	var chapters = make([]models2.Chapter, Len)
 	for i := 0; i < Len; i++ {
 		select {
 		case v, ok := <-ChanResp:
 			if !ok {
 				continue
 			} else {
-				if v.Status == models.Failure {
+				if v.Status == models2.Failure {
 					return errors.New(v.ErrMsg)
 				} else {
-					c := v.Data.(models.Chapter)
+					c := v.Data.(models2.Chapter)
 					chapters[c.ChapterIndex] = c
 				}
 			}
@@ -97,8 +97,8 @@ func Download(novel models.Novel) error {
 	return writeFile(novel)
 }
 
-func GetContent(chapter models.Chapter, ch chan models.ChanResp) {
-	var resp models.ChanResp
+func GetContent(chapter models2.Chapter, ch chan models2.ChanResp) {
+	var resp models2.ChanResp
 	// 需要使用ippool
 	var times int
 Retry:
@@ -108,10 +108,10 @@ Retry:
 		goto Retry
 	} else if err != nil {
 		gologger.Errorf("[GetContent] Really can not download %+v, error:%s", chapter, err)
-		resp.Status = models.Failure
+		resp.Status = models2.Failure
 		resp.ErrMsg = err.Error()
 	} else {
-		resp.Status = models.Success
+		resp.Status = models2.Success
 		chapter.Content = content
 		resp.Data = chapter
 		ch <- resp
@@ -119,10 +119,10 @@ Retry:
 	return
 }
 
-func getChapters(novel *models.Novel) ([]models.Chapter, error) {
-	var chapterList []models.Chapter
+func getChapters(novel *models2.Novel) ([]models2.Chapter, error) {
+	var chapterList []models2.Chapter
 	// get novel chapters
-	resp, _, errs := gorequest.New().Get(novel.NovelURL).AppendHeader("User-Agent", utils.RandomUA()).End()
+	resp, _, errs := gorequest.New().Get(novel.NovelURL).AppendHeader("User-Agent", utils2.RandomUA()).End()
 	if len(errs) != 0 || errs != nil {
 		msg := fmt.Sprintf("get http errors: %s", errs)
 		gologger.Error("[getChapters] ", msg)
@@ -150,7 +150,7 @@ func getChapters(novel *models.Novel) ([]models.Chapter, error) {
 			if exist {
 				title := coder.ConvertString(selection.Find("a").Text())
 				// 从-6开始是因为有6章最新章节
-				var chapter = models.Chapter{ChapterIndex: i - 6, ChapterName: title, LinkURL: url}
+				var chapter = models2.Chapter{ChapterIndex: i - 6, ChapterName: title, LinkURL: url}
 				chapterList = append(chapterList, chapter)
 			}
 		})
@@ -160,8 +160,8 @@ func getChapters(novel *models.Novel) ([]models.Chapter, error) {
 }
 
 func getContent(chapterURL string) ([]string, error) {
-	ips, _ := utils.GetProxies()
-	resp, _, errs := gorequest.New().Get(chapterURL).AppendHeader("User-Agent", utils.RandomUA()).Proxy(ips[0].String()).End()
+	ips, _ := utils2.GetProxies()
+	resp, _, errs := gorequest.New().Get(chapterURL).AppendHeader("User-Agent", utils2.RandomUA()).Proxy(ips[0].String()).End()
 	if len(errs) != 0 || errs != nil {
 		msg := fmt.Sprintf("errors:%s", errs)
 		return nil, errors.New(msg)
@@ -184,7 +184,7 @@ func biqiugeRexp(content string) []string {
 	return contents
 }
 
-func writeFile(novel models.Novel) error {
+func writeFile(novel models2.Novel) error {
 	// 一张图片
 	var imagePath string
 	url := biquge + novel.Image

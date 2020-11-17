@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/betterfor/BookDown/models"
+	models2 "github.com/betterfor/bookDown/internal/models"
 	"github.com/betterfor/gologger"
 	"github.com/betterfor/gorequest"
 )
@@ -15,7 +15,7 @@ func RandomUA() string {
 }
 
 // 从 GoPool （https://github.com/betterfor/GoPool）中获取IpPool
-func GetProxies() (ips []models.Ippool, err error) {
+func GetProxies() (ips []models2.Ippool, err error) {
 	url := "http://localhost:9000/list"
 	_, body, errs := gorequest.New().Get(url).End()
 	if len(errs) != 0 {
