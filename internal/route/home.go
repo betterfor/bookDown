@@ -6,6 +6,13 @@ package route
 
 import "github.com/gin-gonic/gin"
 
+// 首页
 func HomePage(c *gin.Context) {
-	c.HTML(200, "index", map[string]string{})
+	c.Set("title", "home")
+	c.HTML(200, "index", c.Keys)
+}
+
+func SearchPage(c *gin.Context) {
+	c.Set("title", "search")
+	c.HTML(200, "search/search", c.Keys)
 }

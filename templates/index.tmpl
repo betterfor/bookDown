@@ -1,5 +1,16 @@
 {{ template "base/header" .}}
-<div class="container">
-    Website is still in the process of building...
-</div>
+{{ template "header/header" .}}
+    <div class="container">
+
+        <div class="row">
+            <div class="col-md-6 col-md-offset-3">
+                <div class="input-group">
+                    <input type="text" class="form-control" id="search-text" aria-label="...">
+                    <span class="input-group-btn">
+                    <button class="btn btn-default" type="button">Go!</button>
+                </span>
+                </div>
+            </div>
+        </div>
+    </div>
 {{ template "base/footer" .}}

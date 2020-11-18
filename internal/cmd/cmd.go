@@ -32,6 +32,7 @@ func runWeb(c *cli.Context) error {
 	g.Static("/js", "./public/js")
 
 	g.GET("/", route.HomePage)
+	g.GET("/search", route.SearchPage)
 
 	return g.Run(":" + c.String("port"))
 }
