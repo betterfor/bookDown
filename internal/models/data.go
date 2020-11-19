@@ -11,14 +11,6 @@ type Search struct {
 	Keywords   string
 }
 
-// 搜索内容
-type SearchContent struct {
-	Title   string
-	Origin  string
-	Content string
-	IsParse bool
-}
-
 type Book struct {
 	Title    string
 	Describe string

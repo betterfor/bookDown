@@ -1,7 +1,3 @@
-/**
- *Created by XieJian on 2020/11/17 14:18
- *@Desc:
- */
 package cmd
 
 import (
@@ -33,6 +29,7 @@ func runWeb(c *cli.Context) error {
 
 	g.GET("/", route.HomePage)
 	g.GET("/search", route.SearchPage)
+	g.GET("/chapter", route.ChapterPage)
 
 	return g.Run(":" + c.String("port"))
 }

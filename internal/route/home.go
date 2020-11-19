@@ -4,7 +4,12 @@
  */
 package route
 
-import "github.com/gin-gonic/gin"
+import (
+	"github.com/betterfor/bookDown/internal/service"
+	"github.com/gin-gonic/gin"
+	"log"
+	"time"
+)
 
 // 首页
 func HomePage(c *gin.Context) {
@@ -12,7 +17,26 @@ func HomePage(c *gin.Context) {
 	c.HTML(200, "index", c.Keys)
 }
 
+// 搜索页
 func SearchPage(c *gin.Context) {
 	c.Set("title", "search")
+	t := time.Now()
+
+	keywords := c.Query("keywords")
+	c.Set("keywords", keywords)
+
+	e := service.NewBaiduSearchEngine()
+	result, err := e.Search(keywords)
+	if err != nil {
+		log.Println("search error:", err)
+	}
+
+	c.Set("searchContents", result)
+	c.Set("count", len(result))
+	c.Set("time", time.Since(t).Seconds())
 	c.HTML(200, "search/search", c.Keys)
+}
+
+func ChapterPage(c *gin.Context) {
+
 }
